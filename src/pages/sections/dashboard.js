@@ -35,7 +35,7 @@ const Dashboard = () => {
     }
   }
 
-  const getPowerLawPrice = (date=today, m=5.9, y=-17.53) => {
+  const getPowerLawPrice = (date=today, m=6.23695, y=-18.61565) => {
     const referenceDate = new Date(2009, 0, 3); // Months are zero-indexed in JS
     const daysDiff = daysBetween(referenceDate, date);
     const logValue = log10(daysDiff);
@@ -201,18 +201,18 @@ const Dashboard = () => {
         />
       </MDBRow>
       <MDBRow className="mb-4" style={{ marginTop: "-10px" }}>
-      <MDBCol xl="6" md="6" className="mb-r">
-          <LineChart 
-            chartTitle="Bitcoin Price"
-            chartDataAndLabels={priceData}
-          />
+        <MDBCol xl="6" md="6" className="mb-r">
+            <LineChart 
+              chartTitle="Bitcoin Price"
+              chartDataAndLabels={priceData}
+            />
         </MDBCol>
         <MDBCol xl="6" md="6" className="mb-r">
-        <LineChart 
-          chartTitle="Exchange Volume ($M)"
-          chartDataAndLabels={volumeData}
-          valueScale="1000000"
-        />
+          <LineChart 
+            chartTitle="Exchange Volume ($M)"
+            chartDataAndLabels={volumeData}
+            valueScale="1000000"
+          />
         </MDBCol>
       </MDBRow>
       <MDBRow style={{ marginTop: "-10px", fontSize: "75%", textAlign: "right"}}>
