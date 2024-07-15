@@ -7,19 +7,18 @@ import MyClock from "../../components/clock.js"
 import "@fortawesome/fontawesome-free/css/all.min.css"
 import "bootstrap-css-only/css/bootstrap.min.css"
 import "mdbreact/dist/css/mdb.css"
+import { getPowerLawData } from "../../lib/dateTime.js"
 
 
 const Dashboard = () => {
   const [price, setPrice] = useState(0)
   const [blocksToNextHalving, setBlocksToNextHalving] = useState(0)
   const [timer, setTimer] = useState(0)
-  const [height, setHeight] = useState(0)
   const [priceData, setPriceData] = useState([])
   const [volumeData, setVolumeData] = useState([])
+  const [powerLawData, setPowerLawData] = useState([])
   const { log10, pow } = Math
   const today = new Date();
-
-  const lostBitcoins = 1500000
 
   const daysBetween = (date1, date2) => {
     const oneDay = 24 * 60 * 60 * 1000; // Hours * minutes * seconds * milliseconds
@@ -52,7 +51,6 @@ const Dashboard = () => {
   function estimatedDayOfNextHalving(blockHeight) {
     return new Date(today.getTime() + convertBlocksToMinutes(blockHeight)*60000)
   }
-
   
   function timeToHalving(blockHeight) {
     // return convertTimestamp(today)
@@ -78,30 +76,13 @@ const Dashboard = () => {
     })
         .format(num)
   }
+
   function fmtCurrency(num, decimals = 0) {
     return "$" + new Intl.NumberFormat("en-US", 
       { maximumFractionDigits: decimals,
         minimumFractionDigits: decimals
        })
       .format(num)
-  }
-  function getStock2Flow(blockHeight) {
-    var reward = 50
-    const halvings = Math.floor(blockHeight / 210000)
-    var stock = 0
-
-    for(var i = 0; i< halvings; i++) {
-      stock += 210000 * reward
-      reward = reward / 2
-    }
-
-    stock += blockHeight % 210000 * reward
-    return (stock - lostBitcoins) / (reward * 6 * 24 * 365)
-  }
-
-  function getStock2FlowPrice(s2f) {
-    //  S2F Model price (USD) = exp(-1,84) * SF ^ 3,36
-    return Math.exp(-1.84) * Math.pow(s2f,3.36)
   }
 
   function loadData() {
@@ -115,43 +96,73 @@ const Dashboard = () => {
         .catch(err => {
           console.log(err)
         })
-        fetch("https://blockchain.info/q/getblockcount", {cache: "no-cache"})
-          .then(res => res.json())
-          .then(json => {
-            setHeight(json)
-            setBlocksToNextHalving(210000 - (json % 210000))
-          })
-          .catch(err => {
-            console.log(err)
-          })
-        
+      fetch("https://blockchain.info/q/getblockcount", {cache: "no-cache"})
+        .then(res => res.json())
+        .then(json => {
+          setBlocksToNextHalving(210000 - (json % 210000))
+        })
+        .catch(err => {
+          console.log(err)
+        })        
     }
   }
 
+  function extendGraphData(values, days) {
+    const extendedValues = [...values];
+    const lastItem = values[values.length - 1];
+
+    let lastX = lastItem.x;
+    for (let i = 0; i < days; i++) {
+        lastX += 86400; // Increment by one day in seconds
+        extendedValues.push({ x: lastX, y: null });
+    } 
+    return extendedValues;
+  }
+
   // CHART FUNCTIONS
-  function loadChartDataFromUrl(url, func) {
+  function loadChartDataFromUrl(url, func, extendFlag) {
+    var extended_values
     if (typeof window !== `undefined`) {
       fetch( url, {cache: "no-cache"})
         .then(res => res.json())
         .then(json => {
-          func(json.values)
+          console.log(json.values)
+          if (extendFlag) {
+            extended_values = extendGraphData(json.values, 360)
+          } else {
+            extended_values = json.values
+          }
+          func(extended_values)
         })
         .catch(err => {
           console.log(err)   
         })
-        
     }
   }
 
+  function loadPowerLawData(){
+    const resultArray = Array.from({ length: 540 }, (_, index) => {
+      const date = new Date();
+      date.setDate(date.getDate() - 179 + index);
+      const result = getPowerLawData(date)
+      return result
+    });
+    console.log(resultArray)
+    setPowerLawData(resultArray);
+  }
+
   useEffect( () => {
+      console.log("USEEFFECT CALLED")
+      console.log(powerLawData)
       if (typeof window !== `undefined`) {
         const id = window.setTimeout(() => {
+          loadPowerLawData();
           loadChartDataFromUrl(
             "https://api.blockchain.info/charts/market-price?timespan=180days&format=json&cors=true",
-            setPriceData);
+            setPriceData, true);
           loadChartDataFromUrl(
             "https://api.blockchain.info/charts/trade-volume?timespan=180days&format=json&cors=true",
-            setVolumeData);
+            setVolumeData, false);
           loadData();
           timer ? setTimer(-timer) : setTimer(300000) 
         }, Math.abs(timer));
@@ -202,15 +213,19 @@ const Dashboard = () => {
       </MDBRow>
       <MDBRow className="mb-4" style={{ marginTop: "-10px" }}>
         <MDBCol xl="6" md="6" className="mb-r">
-            <LineChart 
-              chartTitle="Bitcoin Price"
-              chartDataAndLabels={priceData}
-            />
+          <LineChart 
+            chartTitle="Bitcoin Price"
+            secondChartTitle="Power Law Price"
+            chartDataAndLabels={priceData}
+            secondChartDataAndLabels={powerLawData}
+          />
         </MDBCol>
         <MDBCol xl="6" md="6" className="mb-r">
           <LineChart 
             chartTitle="Exchange Volume ($M)"
             chartDataAndLabels={volumeData}
+            // secondChartTitle="Power Law Price"
+            // secondChartDataAndLabels={priceData}
             valueScale="1000000"
           />
         </MDBCol>

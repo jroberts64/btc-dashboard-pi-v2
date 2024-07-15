@@ -23,3 +23,32 @@ export default function getDateTime( date = new Date(), seconds = false, sep = "
       .format(date.getSeconds()) + " " : " ")
     + getAmPm(date.getHours())
 }
+
+// Example usage:
+// const I2 = 2023; // Example year from cell I2
+// const W12 = 1;   // Example value from cell W12
+// const W13 = 2;   // Example value from cell W13
+// console.log(calculateValue(I2, W12, W13));
+
+export function getPowerLawData(startDate) {
+  const slope = 6.23695
+  const intercept = -18.61565
+  // Get the current date
+  
+  // Create a new date with the year from I2 and the current month and day
+  // const currentDate = new Date(year, today.getMonth(), today.getDate());
+  
+  // Create the reference date (January 3, 2009)
+  const genesisBlock = new Date(2009, 0, 3);
+  
+  // Calculate the difference in days between the two dates
+  const diffInDays = (startDate - genesisBlock) / (1000 * 60 * 60 * 24);
+  
+  // Calculate the base-10 logarithm of the difference in days
+  const logValue = Math.log10(diffInDays);
+  
+  // Calculate the final value using the formula
+  const result = Math.pow(10, logValue * slope + intercept);
+  return Math.round(result,0);
+}
+
