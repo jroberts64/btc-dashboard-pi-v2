@@ -21,16 +21,25 @@ const LineChart = props => {
         borderDash: [],
         borderDashOffset: 0.0,
         borderJoinStyle: "miter",
-        pointBorderColor: "rgba(75,192,192,1)",
-        pointBackgroundColor: "#fff",
-        pointBorderWidth: 1,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: "rgba(75,192,192,1)",
-        pointHoverBorderColor: "rgba(220,220,220,1)",
-        pointHoverBorderWidth: 2,
-        pointRadius: 1,
-        pointHitRadius: 10,
+        pointStyle: 'false',
+        // pointBorderColor: "rgba(75,192,192,1)",
+        // pointBackgroundColor: "#fff",
+        // pointBorderWidth: 1,
+        // pointHoverRadius: 5,
+        // pointHoverBackgroundColor: "rgba(75,192,192,1)",
+        // pointHoverBorderColor: "rgba(220,220,220,1)",
+        // pointHoverBorderWidth: 2,
+        pointRadius: 0,
+        // pointHitRadius: 10,
         data: graphData,
+        options: {
+          scales: {
+              y: {
+                  suggestedMin: 100000,
+                  suggestedMax: 30000,
+              }
+          }
+        }
       },
     ]
     console.log(graphData2)
@@ -47,17 +56,26 @@ const LineChart = props => {
         borderDash: [],
         borderDashOffset: 0.0,
         borderJoinStyle: "miter",
-        pointBorderColor: "rgba(255,99,132,1)",
-        pointBackgroundColor: "#fff",
-        pointBorderWidth: 1,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: "rgba(255,99,132,1)",
-        pointHoverBorderColor: "rgba(220,220,220,1)",
-        pointHoverBorderWidth: 2,
-        pointRadius: 1,
-        pointHitRadius: 10,
+        pointStyle: 'false',
+        // pointBorderColor: "rgba(255,99,132,1)",
+        // pointBackgroundColor: "#fff",
+        // pointBorderWidth: 1,
+        // pointHoverRadius: 5,
+        // pointHoverBackgroundColor: "rgba(255,99,132,1)",
+        // pointHoverBorderColor: "rgba(220,220,220,1)",
+        // pointHoverBorderWidth: 2,
+        pointRadius: 0,
+        // pointHitRadius: 10,
         data: graphData2,
-      });
+        options: {
+          scales: {
+              y: {
+                  min: 100000,
+                  max: 30000,
+              }
+          }
+        }
+        });
     }
 
     return {
@@ -66,16 +84,21 @@ const LineChart = props => {
     };
   }
   
-  function extractChartLabels(currentValue) {
+  function extractChartLabels(currentValue, includeYear="false") {
     var d = new Date(currentValue.x*1000)
-    return ['Jan','Feb','Mar','Arp','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + " " + d.getDate()
+    if (includeYear == "true") {
+      return ['Jan','Feb','Mar','Arp','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + " '" + d.getFullYear().toString().slice(-2)
+    }
+    else {
+      return ['Jan','Feb','Mar','Arp','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + " " + d.getDate()
+    }
   }
 
   function extractChartValues(currentValue) {
     return props.valueScale ? currentValue.y / props.valueScale : currentValue.y
   }
 
-  graphLabels = props.chartDataAndLabels.map(extractChartLabels)
+  graphLabels = props.chartDataAndLabels.map(data => extractChartLabels(data, props.includeYear))
   graphValues = props.chartDataAndLabels.map(extractChartValues)
   graphValues2 = props.secondChartDataAndLabels ? props.secondChartDataAndLabels.map(extractChartValues) : null;
   // graphValues2 = props.secondChartDataAndLabels.map(extractChartValues)

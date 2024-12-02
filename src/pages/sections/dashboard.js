@@ -34,7 +34,7 @@ const Dashboard = () => {
     }
   }
 
-  const getPowerLawPrice = (date=today, m=6.23695, y=-18.61565) => {
+  const getPowerLawPrice = (date=today, m=5.8, y=-17) => {
     const referenceDate = new Date(2009, 0, 3); // Months are zero-indexed in JS
     const daysDiff = daysBetween(referenceDate, date);
     const logValue = log10(daysDiff);
@@ -128,7 +128,7 @@ const Dashboard = () => {
         .then(json => {
           console.log(json.values)
           if (extendFlag) {
-            extended_values = extendGraphData(json.values, 360)
+            extended_values = extendGraphData(json.values, 180)
           } else {
             extended_values = json.values
           }
@@ -141,7 +141,7 @@ const Dashboard = () => {
   }
 
   function loadPowerLawData(){
-    const resultArray = Array.from({ length: 540 }, (_, index) => {
+    const resultArray = Array.from({ length: 720 }, (_, index) => {
       const date = new Date();
       date.setDate(date.getDate() - 179 + index);
       const result = getPowerLawData(date)
@@ -218,21 +218,21 @@ const Dashboard = () => {
             secondChartTitle="Power Law Price"
             chartDataAndLabels={priceData}
             secondChartDataAndLabels={powerLawData}
-          />
+            includeYear="true"
+            />
         </MDBCol>
         <MDBCol xl="6" md="6" className="mb-r">
           <LineChart 
             chartTitle="Exchange Volume ($M)"
             chartDataAndLabels={volumeData}
-            // secondChartTitle="Power Law Price"
-            // secondChartDataAndLabels={priceData}
             valueScale="1000000"
+            includeYear="false"
           />
         </MDBCol>
       </MDBRow>
       <MDBRow style={{ marginTop: "-10px", fontSize: "75%", textAlign: "right"}}>
-        <MDBCol xl="12" md="12" className="mb-r">
-          <MyClock />
+        <MDBCol className="mb-r">
+            <MyClock />
         </MDBCol>
       </MDBRow>
     </div>
